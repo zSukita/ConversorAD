@@ -30,17 +30,17 @@
 #define DEADZONE 100   // Zona morta para evitar tremores no joystick
 
 // Variáveis globais
-ssd1306_t ssd;
-bool pwm_enabled = true;
-int border_style = 1;
-bool green_led_state = false;
+ssd1306_t ssd;         // Estrutura para o display OLED
+bool pwm_enabled = true; // Estado do PWM (ligado ou desligado)
+int border_style = 1;    // Estilo da borda do display (1 ou 2)
+bool green_led_state = false; // Estado do LED Verde (ligado ou desligado)
 
 // Função para configurar o PWM em um pino específico
 void setup_pwm(uint pin) {
-    gpio_set_function(pin, GPIO_FUNC_PWM);
-    uint slice = pwm_gpio_to_slice_num(pin);
-    pwm_set_wrap(slice, 4095); // Configura o limite do PWM para 4095
-    pwm_set_enabled(slice, true);
+    gpio_set_function(pin, GPIO_FUNC_PWM); // Configura o pino para usar PWM
+    uint slice = pwm_gpio_to_slice_num(pin); // Obtém o slice PWM correspondente ao pino
+    pwm_set_wrap(slice, 4095); // Configura o limite do PWM para 4095 (12 bits)
+    pwm_set_enabled(slice, true); // Habilita o slice PWM
     pwm_set_gpio_level(pin, 0); // Inicializa o PWM com 0 (sem brilho)
 }
 
@@ -51,16 +51,16 @@ void debounce_callback(uint gpio, uint32_t events) {
 
     // Verifica se o tempo desde a última interrupção é maior que 50ms (debounce)
     if (current_time - last_time > 50) {
-        if (gpio == JOYSTICK_BTN) {
-            green_led_state = !green_led_state;
-            pwm_set_gpio_level(LED_GREEN, green_led_state ? 2047 : 0);
-            border_style = (border_style == 1) ? 2 : 1;
+        if (gpio == JOYSTICK_BTN) { // Se o botão do joystick foi pressionado
+            green_led_state = !green_led_state; // Alterna o estado do LED Verde
+            pwm_set_gpio_level(LED_GREEN, green_led_state ? 2047 : 0); // Liga ou desliga o LED Verde
+            border_style = (border_style == 1) ? 2 : 1; // Alterna o estilo da borda
             printf("[BOTÃO] Bordas: %d\n", border_style);
-        } else if (gpio == BUTTON_A) {
-            pwm_enabled = !pwm_enabled;
+        } else if (gpio == BUTTON_A) { // Se o botão A foi pressionado
+            pwm_enabled = !pwm_enabled; // Alterna o estado do PWM
             printf("[PWM] Estado: %s\n", pwm_enabled ? "Ativado" : "Desativado");
         }
-        last_time = current_time;
+        last_time = current_time; // Atualiza o tempo da última interrupção
     }
 }
 
